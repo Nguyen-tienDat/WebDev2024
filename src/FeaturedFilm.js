@@ -48,7 +48,7 @@ const FeaturedFilm = ({ movie, isPlayingTrailer, onWatchTrailer }) => {
   const genres = movie.genre_ids.map(id => genreMap[id] || "Unknown").join(", ");
 
   return (
-    <div className="relative h-[calc(100vh-64px)] mt-16">
+    <div className="relative h-[calc(100vh-64px)]">
       {isPlayingTrailer && trailerKey ? (
         <div className="w-full h-full relative">
           <iframe
