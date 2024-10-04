@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import DOMPurify from 'dompurify';
 import { Search, Star, ChevronDown, ChevronUp, Home, Film, Heart, User, X } from 'lucide-react';
 
 const genreMap = {
@@ -249,6 +250,12 @@ const MovieDetails = ({ movie, onClose }) => {
     fetchReviews();
   }, [movie.id]);
 
+  const sanitizeHTML = (html) => {
+    return {
+      __html: DOMPurify.sanitize(html)
+    };
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -296,7 +303,7 @@ const MovieDetails = ({ movie, onClose }) => {
               <div key={review.id} className="mb-4 p-4 bg-gray-100 rounded-lg">
                 <p className="font-semibold">{review.author}</p>
                 <p className="text-sm text-gray-600 mb-2">{new Date(review.created_at).toLocaleDateString()}</p>
-                <p>{review.content}</p>
+                <div dangerouslySetInnerHTML={sanitizeHTML(review.content)} />
               </div>
             ))
           ) : (
