@@ -97,7 +97,7 @@ const TopBar = ({ user }) => {
           </motion.h1>
           <nav>
             <motion.ul className="flex space-x-6" style={{ color: textColor }}>
-              <NavItem to="/" icon={<Home size={18} />} text="Testing123" />
+              <NavItem to="/" icon={<Home size={18} />} text="Testing123123" />
               <NavItem to="/movies" icon={<Film size={18} />} text="Movies" />
               {user && (
                 <>
