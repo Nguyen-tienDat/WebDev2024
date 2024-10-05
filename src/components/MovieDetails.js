@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
-import { genreMap, fetchMovieData } from '../utils';
+import { genreMap, fetchMovieData } from '../utils/api';
 
 const MovieDetails = ({ movie, onClose }) => {
   const [reviews, setReviews] = useState([]);

@@ -30,10 +30,11 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
   return (
     <motion.div
       layout
-      animate={{ opacity: 1 }}
-      initial={{ opacity: 0 }}
-      exit={{ opacity: 0 }}
-      className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer transition-transform hover:scale-105 relative"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.8, opacity: 0 }}
+      transition={{duration : 0.75 ,type: "spring" }}
+      className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer  hover:scale-105 relative"
       onClick={() => onClick(movie)}
       whileHover={{ y: -5 }}
     >
