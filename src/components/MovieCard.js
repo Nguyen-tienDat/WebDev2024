@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, Heart } from 'lucide-react';
+import MovieDetails from '../components/MovieDetails';
 import { genreMap } from '../utils/movieUtils';
 import { addToFavorites, removeFromFavorites } from '../utils/auth';
 import { useAuth } from '../contexts/AuthContext'; // We'll create this context later

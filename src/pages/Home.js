@@ -109,12 +109,15 @@
 // export default Home;
 
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import MovieDetails from '../components/MovieDetails';
 import FeaturedFilm from '../components/FeaturedFilm';
 import { fetchMovieData } from '../utils/api';
 import MovieCard from '../components/MovieCard';
 
 const Home = () => {
+  const [selectedMovie, setSelectedMovie] = useState(null);
   const [trailerKey, setTrailerKey] = useState(null);
   const [featuredMovie, setFeaturedMovie] = useState(null);
   const [popularMovies, setPopularMovies] = useState([]);
@@ -132,7 +135,6 @@ const Home = () => {
           setFeaturedMovie(popularData.results[0]);
           setPopularMovies(popularData.results.slice(1, 7));
         }
-
         const nowPlayingData = await fetchMovieData('https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1');
         setNowPlayingMovies(nowPlayingData.results.slice(0, 6));
 
@@ -181,7 +183,7 @@ const Home = () => {
         {movies.map(movie => (
           <MovieCard 
             key={movie.id} 
-            onClick={() => window.location.href = `/movies/${movie.id}`} 
+            onClick={setSelectedMovie} 
             movie={movie} 
           />
         ))}   
@@ -224,7 +226,10 @@ const Home = () => {
             Explore All Movies
           </Link>
         </div>
-      </div>
+        </div>
+      <AnimatePresence>
+        {selectedMovie && <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
+      </AnimatePresence>
     </div>
   );
 };
