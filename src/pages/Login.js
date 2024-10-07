@@ -2,23 +2,34 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../config/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // Save session and userId in cookies
+      const user = auth.currentUser;
+      document.cookie = `session=${user.stsTokenManager.accessToken}; path=/;`;
+      document.cookie = `userId=${user.uid}; path=/;`;
       navigate('/');
     } catch (error) {
       setError('Failed to log in. Please check your credentials.');
       console.error('Login error:', error);
     }
   };
+
+  if (currentUser) {
+    navigate('/');
+    return null;
+  }
 
   return (
     <div className="max-w-md mx-auto mt-20 p-6 bg-white rounded-lg shadow-xl">

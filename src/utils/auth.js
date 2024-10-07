@@ -1,31 +1,27 @@
-// src/utils/auth.js
-import { auth, db } from '../config/firebase';
-import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { collection, query, where, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
+
+export const getFavorites = async (userId) => {
+  const q = query(collection(db, 'favorites'), where('userId', '==', userId));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
 
 export const addToFavorites = async (userId, movie) => {
-  try {
-    await setDoc(doc(db, 'favorites', `${userId}_${movie.id}`), {
-      userId,
-      movieId: movie.id,
-      title: movie.title,
-      posterPath: movie.poster_path,
-      voteAverage: movie.vote_average,
-    });
-  } catch (error) {
-    console.error('Error adding to favorites:', error);
-    throw error;
-  }
+  await addDoc(collection(db, 'favorites'), {
+    userId,
+    movie
+  });
 };
 
 export const removeFromFavorites = async (userId, movieId) => {
-  try {
-    await deleteDoc(doc(db, 'favorites', `${userId}_${movieId}`));
-  } catch (error) {
-    console.error('Error removing from favorites:', error);
-    throw error;
-  }
-};
-
-export const signOut = () => {
-  return auth.signOut();
+  const q = query(
+    collection(db, 'favorites'), 
+    where('userId', '==', userId),
+    where('movieId', '==', movieId)
+  );
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((document) => {
+    deleteDoc(doc(db, 'favorites', document.id));
+  });
 };

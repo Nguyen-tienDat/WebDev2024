@@ -56,31 +56,37 @@
 
 // export default TopBar;
 
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Home, Film, Heart, User, LogOut } from 'lucide-react';
 import { auth } from '../config/firebase';
+import { useAuth } from '../contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 const TopBar = ({ user }) => {
   const { scrollY } = useScroll();
+  const { currentUser, logout } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
+  const handleLogout = () => {
+    logout();
+    setShowDropdown(false);
+  };
   
   const backgroundColor = useTransform(
     scrollY,
-    [0, 50],
-    ['rgba(31, 41, 55, 0)', 'rgba(31, 41, 55, 0.9)']
+    [0, 20],
+    isHomePage ? ['rgba(31, 41, 55, 0)', 'rgba(31, 41, 55, 0.9)'] : ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.0)']
   );
-
+  
   const textColor = useTransform(
     scrollY,
-    [0, 50],
-    ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.8)']
+    [0, 20],
+    isHomePage ? ['rgba(255, 255, 255, 1)', 'rgba(255, 255, 255, 0.8)'] : ['rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0.0)']
   );
-
-  const handleLogout = () => {
-    auth.signOut();
-  };
 
   return (
     <motion.div
@@ -92,6 +98,8 @@ const TopBar = ({ user }) => {
           <motion.h1 
             className="text-2xl font-bold"
             style={{ color: textColor }}
+            whileHover={{ scale: 1.5}} 
+            whileTap={{ scale: 0.95}}
           >
             <Link to="/">MovieMaster</Link>
           </motion.h1>
@@ -99,25 +107,36 @@ const TopBar = ({ user }) => {
             <motion.ul className="flex space-x-6" style={{ color: textColor }}>
               <NavItem to="/" icon={<Home size={18} />} text="Home" />
               <NavItem to="/movies" icon={<Film size={18} />} text="Movies" />
-              {user && (
-                <>
-                  <NavItem to="/favorites" icon={<Heart size={18} />} text="Favorites" />
-                  <NavItem to="/profile" icon={<User size={18} />} text="Profile" />
-                  <li>
-                    <button onClick={handleLogout} className="flex items-center">
-                      <LogOut size={18} className="mr-1" />
-                      Logout
-                    </button>
-                  </li>
-                </>
-              )}
-              {!user && (
-                <li>
-                  <Link to="/login" className="flex items-center">
-                    <User size={18} className="mr-1" />
-                    Login
-                  </Link>
-                </li>
+              <NavItem to="/favorites" icon={<Heart size={18} />} text="Favorites" />
+              {currentUser ? (
+                <div className="relative ">
+                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className=" focus:outline-none"
+                    >
+                      <User size={18} className="mr-1 inline-block" />
+                      Hello, {currentUser.email}
+                  </motion.button>
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                      <Link 
+                        to="/favorites" 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        Favorites
+                      </Link>
+                      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                          onClick={handleLogout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                      </motion.button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link to="/login" className="mx-2"><User size={18} className="mr-1 inline-block" />Login</Link>
               )}
             </motion.ul>
           </nav>
@@ -137,3 +156,4 @@ const NavItem = ({ to, icon, text }) => (
 );
 
 export default TopBar;
+

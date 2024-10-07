@@ -1,27 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, Heart } from 'lucide-react';
-import MovieDetails from '../components/MovieDetails';
 import { genreMap } from '../utils/movieUtils';
 import { addToFavorites, removeFromFavorites } from '../utils/auth';
-import { useAuth } from '../contexts/AuthContext'; // We'll create this context later
+import { getCookie } from '../contexts/AuthContext';
 
 const MovieCard = ({ movie, onClick, isFavorite }) => {
-  const { user } = useAuth();
+  const userId = getCookie('userId');
   const primaryGenre = movie.genre_ids[0] ? genreMap[movie.genre_ids[0]] : "Unknown";
   const secondaryGenre = movie.genre_ids[1] ? genreMap[movie.genre_ids[1]] : null;
 
   const handleFavoriteClick = async (e) => {
     e.stopPropagation();
-    if (!user) {
+    if (!userId) {
       alert('Please login to add favorites');
       return;
     }
     try {
       if (isFavorite) {
-        await removeFromFavorites(user.uid, movie.id);
+        await removeFromFavorites(userId, movie.id);
       } else {
-        await addToFavorites(user.uid, movie);
+        await addToFavorites(userId, movie);
       }
     } catch (error) {
       console.error('Error updating favorites:', error);
@@ -34,8 +33,8 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.8, opacity: 0 }}
-      transition={{duration : 0.75 ,type: "spring" }}
-      className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer  hover:scale-105 relative"
+      transition={{ duration: 0.75, type: "spring" }}
+      className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:scale-105 relative"
       onClick={() => onClick(movie)}
       whileHover={{ y: -5 }}
     >
@@ -55,7 +54,7 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
               <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
                 {secondaryGenre}
               </span>
-          )}
+            )}
           </span>
           <div className="flex items-center">
             <Star className="text-yellow-400 mr-1" size={16} />
@@ -63,15 +62,18 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
           </div>
         </div>
       </div>
-      <button
+      <motion.button
         className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
         onClick={handleFavoriteClick}
+        whileTap={{ scale: 0.9 }}
+        animate={{ backgroundColor: isFavorite ? '#f87171' : '#ffffff' }}
+        transition={{ duration: 0.3 }}
       >
         <Heart
           size={20}
           className={isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}
         />
-      </button>
+      </motion.button>
     </motion.div>
   );
 };
