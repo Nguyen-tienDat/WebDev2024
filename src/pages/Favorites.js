@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '../config/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import MovieCard from '../components/MovieCard';
 import MovieDetails from '../components/MovieDetails';
 import { useNavigate } from 'react-router-dom';
+
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
@@ -15,16 +16,14 @@ const Favorites = () => {
     const fetchFavorites = async () => {
       const userId = getCookie('userId');
       if (!userId) {
-        // If there's no userId in cookies, redirect to login
         navigate('/login');
         return;
       }
 
-      const q = query(collection(db, 'favorites'), where('userId', '==', userId));
+      const q = query(collection(db, 'users', userId, 'favorites'));
       const querySnapshot = await getDocs(q);
       const favoritesData = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        console.log('data:', data);
         if (data) {
           return { id: data.movie.movieId, ...data.movie };
         }

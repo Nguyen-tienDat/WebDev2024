@@ -1,17 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Heart } from 'lucide-react';
 import { genreMap } from '../utils/movieUtils';
 import { addToFavorites, removeFromFavorites } from '../utils/auth';
 import { getCookie } from '../contexts/AuthContext';
+import FavoritesData from '../contexts/AuthContext';
 
-const MovieCard = ({ movie, onClick, isFavorite }) => {
+
+const MovieCard = ({ movie, onClick}) => {
   const userId = getCookie('userId');
+  const [isFavorite, setIsFavorite] = useState(movie.isFavorite);
   const primaryGenre = movie.genre_ids[0] ? genreMap[movie.genre_ids[0]] : "Unknown";
   const secondaryGenre = movie.genre_ids[1] ? genreMap[movie.genre_ids[1]] : null;
 
+  const setFavoriteState = async () => {  
+      const data = await FavoritesData;
+      setIsFavorite(data[movie.id]);
+  }
+  
+  useEffect(() => {
+    setFavoriteState();
+  }, []);
+  
   const handleFavoriteClick = async (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent triggering parent click event
     if (!userId) {
       alert('Please login to add favorites');
       return;
@@ -22,6 +34,7 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
       } else {
         await addToFavorites(userId, movie);
       }
+      setIsFavorite(!isFavorite); // Toggle the favorite state and re-render this card
     } catch (error) {
       console.error('Error updating favorites:', error);
     }
@@ -36,7 +49,6 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
       transition={{ duration: 0.75, type: "spring" }}
       className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:scale-105 relative"
       onClick={() => onClick(movie)}
-      whileHover={{ y: -5 }}
     >
       <img 
         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} 
@@ -64,9 +76,8 @@ const MovieCard = ({ movie, onClick, isFavorite }) => {
       </div>
       <motion.button
         className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md"
-        onClick={handleFavoriteClick}
+        onClick={handleFavoriteClick} // Clicking triggers the state change
         whileTap={{ scale: 0.9 }}
-        animate={{ backgroundColor: isFavorite ? '#f87171' : '#ffffff' }}
         transition={{ duration: 0.3 }}
       >
         <Heart

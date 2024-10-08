@@ -17,6 +17,7 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
       // Save session and userId in cookies
       const user = auth.currentUser;
+      document.cookie = `displayName=${user.displayName || ''}; path=/;`;
       document.cookie = `session=${user.stsTokenManager.accessToken}; path=/;`;
       document.cookie = `userId=${user.uid}; path=/;`;
       navigate('/');

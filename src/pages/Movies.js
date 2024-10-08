@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MovieCard from '../components/MovieCard';
 import MovieDetails from '../components/MovieDetails';
 import { fetchMovieData } from '../utils/api';
+import { getCookie } from '../contexts/AuthContext';
+import { getFavorites } from '../utils/auth';
 
 const Movies = () => {
   const [movies, setMovies] = useState([]);
@@ -11,8 +13,12 @@ const Movies = () => {
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [ratingRange, setRatingRange] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [favorites, setFavorites] = useState({});
+  const userId = getCookie('userId');
+  
 
   const ratingRanges = [
     { value: 'all', label: 'All Ratings 🎬' },
@@ -21,11 +27,6 @@ const Movies = () => {
     { value: '6-8', label: 'Pretty Good 😊 (6-8)' },
     { value: '8-10', label: 'Amazing! 🤩 (8-10)' }
   ];
-
-  useEffect(() => {
-    fetchGenres();
-    fetchMovies();
-  }, []);
 
   const fetchGenres = async () => {
     const genresData = await fetchMovieData('https://api.themoviedb.org/3/genre/movie/list?language=en');
@@ -98,9 +99,93 @@ const Movies = () => {
     fetchMovies(1);
   };
 
+  useEffect(() => {
+    fetchGenres();
+    fetchMovies();
+    if (userId) {
+      fetchFavorites();
+    }
+  }, [userId]);
+
+  const fetchFavorites = async () => {
+    try {
+      const userFavorites = await getFavorites(userId);
+      setFavorites(userId);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+    }
+  };
+
+  const handleFavoriteToggle = (movieId) => {
+    setFavorites(prev => ({
+      ...prev,
+      [movieId]: !prev[movieId]
+    }));
+  };
+
   return (
-    <div className="flex pt-16"> 
-      <div className="w-52 p-4 bg-gray-100 min-h-screen sticky top-16">
+    <div className="flex flex-col md:flex-row pt-16">
+      {/* Filter Top Bar for Small Screens */}
+      <div className="md:hidden bg-gray-100 p-4 sticky top-16 z-10">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Filters</h2>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="bg-blue-500 text-white px-3 py-1 rounded-full"
+          >
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+        </div>
+        {showFilters && (
+          <div className="mt-4">
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold mb-2">Genres</h3>
+              <div className="flex flex-wrap gap-2">
+                {genres.map(genre => (
+                  <button
+                    key={genre.id}
+                    onClick={() => handleGenreToggle(genre.id)}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedGenres.includes(genre.id)
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    {genre.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-4">
+              <h3 className="text-xl font-semibold mb-2">Rating Range</h3>
+              <div className="space-y-2">
+                {ratingRanges.map(range => (
+                  <button
+                    key={range.value}
+                    onClick={() => handleRatingChange(range.value)}
+                    className={`w-full text-left px-3 py-2 rounded ${
+                      ratingRange === range.value
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-700'
+                    }`}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={applyFilters}
+              className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
+            >
+              Apply Filters
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Sidebar for Medium and Larger Screens */}
+      <div className="hidden md:block w-52 p-4 bg-gray-100 min-h-screen sticky top-16">
         <h2 className="text-2xl font-bold mb-4">Filters</h2>
         <div className="mb-6">
           <h3 className="text-xl font-semibold mb-2">Genres</h3>
@@ -145,11 +230,19 @@ const Movies = () => {
           Apply Filters
         </button>
       </div>
+
+      {/* Movie List */}
       <div className="flex-1 p-4">
         <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <AnimatePresence >
+          <AnimatePresence>
             {movies.map(movie => (
-              <MovieCard key={movie.id} movie={movie} onClick={setSelectedMovie} />
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onClick={setSelectedMovie}
+                isFavorite={favorites[movie.id] || false}
+                onFavoriteToggle={handleFavoriteToggle}
+              />
             ))}
           </AnimatePresence>
         </motion.div>
@@ -165,8 +258,15 @@ const Movies = () => {
           </div>
         )}
       </div>
+
+      {/* Movie Details Popup */}
       <AnimatePresence>
-        {selectedMovie && <MovieDetails movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
+        {selectedMovie && (
+          <MovieDetails
+            movie={selectedMovie}
+            onClose={() => setSelectedMovie(null)}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
