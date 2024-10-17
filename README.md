@@ -11,7 +11,7 @@ Students are expected to:
 Student Info
 =======================
 
-* Name: Nguyen Minh Hoang
-* ID: 22BI13172
+* Name: Nguyen Nhu Duy
+* ID: 22BI13123
 * Group ID: 2
 * Project Name: Movie Review Platform
