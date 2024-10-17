@@ -11,7 +11,7 @@ Students are expected to:
 Student Info
 =======================
 
-* Name: Lê Tuấn Đạt
-* ID: 22BI13077
+* Name: Nguyen Nhu Duy
+* ID: 22BI13123
 * Group ID: 2
 * Project Name: Movie Review Platform
